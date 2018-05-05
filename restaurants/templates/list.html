@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}List{% endblock title %}
+
+{% block content %}
+<br>
+<form action="{% url 'restaurant-list' %}">
+  <div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="Search" aria-label="Search" name="q" value="{{request.GET.q}}">
+    <div class="input-group-append">
+      <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </div>
+  </div>
+</form>
+<div class="row">
+    {% for restaurant in restaurants %}
+    <div class="col-md-4">
+        <div class="card my-card">
+          {% if restaurant.logo %}
+            <img class="card-img-top" src="{{restaurant.logo.url}}" alt="Hey Noob, look at me...">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{restaurant.name}}</h5>
+            <p class="card-text">
+              <div class="float-left">
+                {{restaurant.description|truncatechars:25}}
+              </div>
+              <div class="float-right">
+                  <i id="star-{{restaurant.id}}"
+                    class="fas fa-star {% if restaurant.id in favorite_list %}text-warning{% endif %}"
+                    onclick="favorite_me({{restaurant.id}})"></i>
+              </div>
+            </p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item text-center">
+                <a href="{% url 'restaurant-detail' restaurant.id %}" class="btn btn-outline-dark">View</a>
+            </li>
+          </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script type="text/javascript">
+    function favorite_me(id) {
+        $.ajax(
+            {
+                type:'GET',
+                url: '/restaurants/'+id+"/favorite/",
+                error: function(){
+                    console.log('error');
+                },
+                success: function(data){
+                    let star_id = "#star-"+id;
+                    if(data.action==="favorite"){
+                        $(star_id).addClass("text-warning");
+                    }else{
+                        $(star_id).removeClass("text-warning")
+                    }
+                },
+            }
+        );
+    }
+</script>
+{% endblock content %}
+
