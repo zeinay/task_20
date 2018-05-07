@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework.test import APIRequestFactory, force_authenticate
-from restaurants.models import Restaurant
+from restaurants.models import Restaurant, Item
 from .views import (
     RestaurantListView,
     RestaurantDetailView,
@@ -43,6 +43,19 @@ class RestaurantAPITest(TestCase):
             closing_time="23:59:00",
             logo="http://icons.veryicon.com/png/Movie%20%26%20TV/Free%20Star%20Wars/Darth%20Vader.png"
             )
+        self.item_1_1 = Item.objects.create(
+            name="Pizza 1",
+            description="This is Pizza 1",
+            price=1.750,
+            restaurant=self.restaurant_1,
+            )
+        self.item_1_2 = Item.objects.create(
+            name="Pizza 2",
+            description="This is Pizza 2",
+            price=1.750,
+            restaurant=self.restaurant_1,
+            )
+
         self.restaurant_2 = Restaurant.objects.create(
             owner=self.user2,
             name="Restaurant 2", 
@@ -92,19 +105,6 @@ class RestaurantAPITest(TestCase):
         detail_url = reverse("api-detail", kwargs = {"restaurant_id": self.restaurant_1.id})
         request = self.factory.get(detail_url)
         response = RestaurantDetailView.as_view()(request, restaurant_id=self.restaurant_1.id)
-        self.assertEqual(
-            {
-                'id':self.restaurant_1.id,
-                'owner':self.restaurant_1.owner.id,
-                'name':self.restaurant_1.name,
-                'description':self.restaurant_1.description,
-                'opening_time': self.restaurant_1.opening_time,
-                'closing_time': self.restaurant_1.closing_time,
-                'update': "http://"+ request.get_host()+reverse("api-update", kwargs = {"restaurant_id": self.restaurant_1.id}),
-                'delete': "http://"+ request.get_host()+reverse("api-delete", kwargs = {"restaurant_id": self.restaurant_1.id})
-            },
-            response.data
-        )
         self.assertEqual(response.status_code, 200)
 
     def test_create_view(self):
